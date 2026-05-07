@@ -317,6 +317,15 @@ def extract_json(text: str) -> Dict[str, Any]:
 async def health():
     return {"status": "ok", "version": "1.1.0"}
 
+@app.get("/debug")
+async def debug(request: Request):
+    return {
+        "url": str(request.url),
+        "path": request.url.path,
+        "root_path": request.scope.get("root_path"),
+        "headers": dict(request.headers)
+    }
+
 @app.get("/stats")
 async def stats():
     return get_stats()

@@ -89,6 +89,8 @@ export default function Home() {
   ];
 
   useEffect(() => {
+    console.log("🚀 CodeScan API URL:", API);
+    
     const checkOllama = async () => {
       try {
         const r = await axios.get(`${API}/ollama/status`);
