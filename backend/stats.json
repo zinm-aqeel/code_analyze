@@ -1,0 +1,52 @@
+{
+  "deepseek-coder-v2": {
+    "total_lines": 850,
+    "total_seconds": 782.92,
+    "count": 4,
+    "spl": 0.9210823529411765,
+    "avg_time_per_request": 195.73,
+    "avg_time_minutes": 3.2621666666666664,
+    "speed_label": "slow \ud83d\udc0c",
+    "rank": 4
+  },
+  "qwen2.5-coder": {
+    "total_lines": 1735,
+    "total_seconds": 1302.8200000000002,
+    "count": 4,
+    "spl": 0.7509048991354468,
+    "avg_time_per_request": 325.70500000000004,
+    "avg_time_minutes": 5.428416666666667,
+    "speed_label": "medium \ud83d\udc22",
+    "rank": 3
+  },
+  "deepseek-coder-latest": {
+    "total_lines": 1589,
+    "total_seconds": 694.11,
+    "count": 6,
+    "spl": 0.436821900566394,
+    "avg_time_per_request": 115.685,
+    "avg_time_minutes": 1.9280833333333334,
+    "speed_label": "fast \ud83d\ude80",
+    "rank": 2
+  },
+  "codellama": {
+    "total_lines": 230,
+    "total_seconds": 1388.1100000000001,
+    "count": 3,
+    "spl": 6.035260869565218,
+    "avg_time_per_request": 462.7033333333334,
+    "avg_time_minutes": 7.711722222222223,
+    "speed_label": "slow \ud83d\udc0c",
+    "rank": 5
+  },
+  "groq-llama": {
+    "total_lines": 4050,
+    "total_seconds": 16.66,
+    "count": 6,
+    "spl": 0.00411358024691358,
+    "avg_time_per_request": 2.776666666666667,
+    "avg_time_minutes": 0.04627777777777778,
+    "speed_label": "ultra-fast \u26a1",
+    "rank": 1
+  }
+}
