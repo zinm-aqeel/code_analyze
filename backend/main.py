@@ -111,7 +111,8 @@ app = FastAPI(
     title="CodeScan API",
     version="1.1.0",
     description="AI-powered code quality and effort analysis",
-    lifespan=lifespan
+    lifespan=lifespan,
+    root_path=os.getenv("ROOT_PATH", "")
 )
 
 # Configuration
