@@ -36,14 +36,6 @@ const MODELS = [
   { id: "groq-llama", name: "Groq Cloud (Fast)", icon: <Globe size={16} />, estimate: 10 },
 ];
 
-const MODEL_MAP: Record<string, string> = {
-  "qwen2.5-coder": "qwen2.5-coder:7b",
-  "deepseek-coder-v2": "deepseek-coder-v2:16b",
-  "codellama": "codellama:7b-instruct",
-  "deepseek-coder-latest": "deepseek-coder:latest",
-  "groq-llama": "llama-3.3-70b-versatile",
-};
-
 const DIM_COLORS: Record<string, string> = {
   quality: "#00d4ff",
   best_practices: "#00ff9d",
@@ -67,7 +59,6 @@ export default function Home() {
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
   const [ollamaOk, setOllamaOk] = useState<boolean | null>(null);
-  const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [dragging, setDragging] = useState(false);
   const [filename, setFilename] = useState("");
   const [activeTab, setActiveTab] = useState<"paste" | "upload">("paste");
@@ -89,13 +80,10 @@ export default function Home() {
   ];
 
   useEffect(() => {
-    console.log("🚀 CodeScan API URL:", API);
-    
     const checkOllama = async () => {
       try {
         const r = await axios.get(`${API}/ollama/status`);
         setOllamaOk(r.data.available);
-        setAvailableModels(r.data.models || []);
       } catch (e) {
         setOllamaOk(false);
       }
@@ -216,11 +204,6 @@ export default function Home() {
     if (f) handleFile(f);
   }, [handleFile]);
 
-  const isLocalModel = model !== "groq-llama";
-  const showOllamaWarning = ollamaOk === false && isLocalModel;
-  const isLongCode = code.trim().length > 3000;
-  const showLongCodeWarning = isLongCode && isLocalModel && !loading;
-
   return (
     <div className="min-h-screen grid-bg" style={{ background: "var(--bg-primary)" }}>
       {/* Header */}
@@ -272,51 +255,6 @@ export default function Home() {
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
           {/* Input Panel */}
           <div className="fade-in-up space-y-6" style={{ animationDelay: "0.1s", animationFillMode: "backwards" }}>
-            
-            {ollamaOk === false && (
-              <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-3">
-                <div className="flex items-start gap-3">
-                  <AlertCircle size={22} className="text-amber-500 flex-shrink-0 mt-1" />
-                  <div>
-                    <div className="text-sm font-bold text-amber-500">Local Models Not Detected</div>
-                    <p className="text-xs mt-1 text-[#8888aa] leading-relaxed">
-                      To use local analysis, please ensure <a href="https://ollama.com" target="_blank" className="underline hover:text-amber-500">Ollama</a> is installed and running. 
-                      You can pull the models by running these commands in PowerShell or CMD:
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pl-9">
-                  <div className="text-[10px] font-mono p-2 bg-black/40 rounded border border-white/5 text-amber-500/80">
-                    ollama run qwen2.5-coder
-                  </div>
-                  <div className="text-[10px] font-mono p-2 bg-black/40 rounded border border-white/5 text-amber-500/80">
-                    ollama run deepseek-coder-v2
-                  </div>
-                </div>
-
-                <div className="pl-9 pt-1 flex items-center gap-2">
-                  <span className="text-xs text-[#4a4a6a]">Alternatively:</span>
-                  <button onClick={() => setModel("groq-llama")} className="text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-500 px-3 py-1 rounded-full font-bold transition-all border border-amber-500/30">
-                    Try Groq Cloud (No Install Required)
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {showLongCodeWarning && (
-              <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-start gap-3">
-                <Lightbulb size={20} className="text-[#00d4ff] flex-shrink-0 mt-0.5" />
-                <div>
-                  <div className="text-sm font-bold text-[#00d4ff]">Long Code Detected</div>
-                  <div className="text-xs mt-1 text-[#8888aa]">
-                    Analyzing large snippets with local models may take several minutes. 
-                    Try using <span className="text-[#00d4ff] font-bold cursor-pointer hover:underline" onClick={() => setModel("groq-llama")}>Groq</span> for near-instant results on long code.
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Model Selector */}
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-2">
               {MODELS.map(m => {
@@ -345,26 +283,6 @@ export default function Home() {
                 );
               })}
             </div>
-
-            {isLocalModel && ollamaOk && !availableModels.includes(MODEL_MAP[model] || model) && availableModels.length > 0 && (
-              <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/30 space-y-3">
-                <div className="flex items-start gap-3">
-                  <Terminal size={20} className="text-[#00d4ff] flex-shrink-0 mt-0.5" />
-                  <div>
-                    <div className="text-sm font-bold text-[#00d4ff]">Model Not Downloaded</div>
-                    <p className="text-xs mt-1 text-[#8888aa] leading-relaxed">
-                      Ollama is running, but you haven't downloaded <strong>{model}</strong> yet. 
-                      Run this command to install it:
-                    </p>
-                  </div>
-                </div>
-                <div className="pl-8">
-                  <div className="text-[10px] font-mono p-2 bg-black/40 rounded border border-white/5 text-[#00d4ff]">
-                    ollama run {MODEL_MAP[model] || model}
-                  </div>
-                </div>
-              </div>
-            )}
 
             <div className="relative rounded-2xl overflow-hidden border border-[#2a2a4a]" style={{ background: "var(--bg-card)", boxShadow: "0 20px 50px rgba(0,0,0,0.3)" }}>
               {/* Tabs */}

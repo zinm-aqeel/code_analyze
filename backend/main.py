@@ -24,11 +24,8 @@ def get_stats():
         return {}
 
 def save_stats(stats):
-    try:
-        with open(STATS_FILE, "w") as f:
-            json.dump(stats, f, indent=2)
-    except Exception as e:
-        logger.warning(f"Could not save stats to {STATS_FILE}: {str(e)}")
+    with open(STATS_FILE, "w") as f:
+        json.dump(stats, f, indent=2)
 
 def recalculate_ranks(stats: Dict[str, Any]) -> Dict[str, Any]:
     # Sort models by SPL (lower is better/faster)
@@ -111,24 +108,32 @@ app = FastAPI(
     title="CodeScan API",
     version="1.1.0",
     description="AI-powered code quality and effort analysis",
-    lifespan=lifespan,
-    root_path=os.getenv("ROOT_PATH", "")
+    lifespan=lifespan
 )
 
 # Configuration
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 ALLOW_GROQ = bool(GROQ_API_KEY)
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 STATS_FILE = "stats.json"
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=["*"] if "*" in ALLOWED_ORIGINS else ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/")
+async def root():
+    return {
+        "message": "CodeScan API is running",
+        "health": "/health",
+        "stats": "/stats",
+        "documentation": "/docs"
+    }
 
 MODEL_MAP = {
     "qwen2.5-coder": "qwen2.5-coder:7b",
@@ -222,14 +227,7 @@ async def call_ollama(model: str, prompt: str) -> str:
             return data.get("response", "")
     except httpx.ConnectError:
         logger.error("Could not connect to Ollama. Is it running?")
-        raise HTTPException(
-            status_code=503, 
-            detail=(
-                "Ollama is not installed or running. To use local models, install Ollama from ollama.com "
-                "and run 'ollama run qwen2.5-coder' or 'ollama run deepseek-coder-v2' in your terminal. "
-                "Alternatively, select 'Groq Cloud' for instant analysis without any local setup."
-            )
-        )
+        raise HTTPException(status_code=503, detail="Ollama service unreachable")
     except httpx.TimeoutException:
         logger.error(f"Ollama request timed out after 900s for model {actual_model}")
         raise HTTPException(status_code=504, detail="AI engine timed out. CPU-only inference can be very slow. Try a smaller model like Llama 3.2 or Qwen 7B.")
@@ -316,15 +314,6 @@ def extract_json(text: str) -> Dict[str, Any]:
 @app.get("/health")
 async def health():
     return {"status": "ok", "version": "1.1.0"}
-
-@app.get("/debug")
-async def debug(request: Request):
-    return {
-        "url": str(request.url),
-        "path": request.url.path,
-        "root_path": request.scope.get("root_path"),
-        "headers": dict(request.headers)
-    }
 
 @app.get("/stats")
 async def stats():
@@ -454,4 +443,5 @@ async def analyze_upload(
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.getenv("PORT", 7860))
+    uvicorn.run(app, host="0.0.0.0", port=port)
