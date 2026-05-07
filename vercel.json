@@ -7,7 +7,10 @@
         },
         "backend": {
             "entrypoint": "backend",
-            "routePrefix": "/_/backend"
+            "routePrefix": "/_/backend",
+            "installCommand": "pip install -r requirements.txt",
+            "buildCommand": "echo 'No build step'",
+            "startCommand": "uvicorn main:app --host 0.0.0.0 --port $PORT"
         }
     }
 }
